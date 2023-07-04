@@ -6,29 +6,48 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 func main() {
 	// Defining a boolean flag -l to count iines instead of words
 	lines := flag.Bool("l", false, "Count lines")
 	isCountBytes := flag.Bool("b", false, "Count bytes")
-	fileName := flag.String("file", "", "Path to the file to count")
+	fileName := flag.String("file", "", "Path to the file to count\n You can provide multiple filenames delimited by space to be parsed")
 	// Parsing the flags provided by the user
 	flag.Parse()
-	var readerContent io.Reader
-
+	var fileNames []string
 	if *fileName != "" {
-		file, err := os.Open(*fileName)
+		fileNames = strings.Split(*fileName, " ")
+	}
+	// TODO this is a mess
+	// try to clean this
+	if len(fileNames) > 0 {
+		for _, fName := range fileNames {
+			file, err := os.Open(fName)
+			if err != nil {
+				fmt.Printf("error reading file %s", *fileName)
+				os.Exit(1)
+			}
+			fmt.Println(count(file, *lines, *isCountBytes))
+			if err := file.Close(); err != nil {
+				fmt.Println("Error trying to close the file", file.Name())
+			}
+		}
+		os.Exit(1)
+	} else {
+		stdin, err := os.Stdin.Stat()
 		if err != nil {
-			fmt.Printf("error reading file %s", *fileName)
+			fmt.Println("No file or input provided to be read")
 			os.Exit(1)
 		}
-		readerContent = file
-
-	} else {
-		readerContent = os.Stdin
+		if stdin.Size() > 0 {
+			fmt.Println(count(os.Stdin, *lines, *isCountBytes))
+			os.Exit(1)
+		}
 	}
-	fmt.Println(count(readerContent, *lines, *isCountBytes))
+
+	flag.Usage()
 }
 
 func count(r io.Reader, countLines bool, countBytes bool) string {
