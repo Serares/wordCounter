@@ -12,9 +12,23 @@ func main() {
 	// Defining a boolean flag -l to count iines instead of words
 	lines := flag.Bool("l", false, "Count lines")
 	isCountBytes := flag.Bool("b", false, "Count bytes")
+	fileName := flag.String("file", "", "Path to the file to count")
 	// Parsing the flags provided by the user
 	flag.Parse()
-	fmt.Println(count(os.Stdin, *lines, *isCountBytes))
+	var readerContent io.Reader
+
+	if *fileName != "" {
+		file, err := os.Open(*fileName)
+		if err != nil {
+			fmt.Printf("error reading file %s", *fileName)
+			os.Exit(1)
+		}
+		readerContent = file
+
+	} else {
+		readerContent = os.Stdin
+	}
+	fmt.Println(count(readerContent, *lines, *isCountBytes))
 }
 
 func count(r io.Reader, countLines bool, countBytes bool) string {
