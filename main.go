@@ -29,7 +29,7 @@ func main() {
 				fmt.Printf("error reading file %s", *fileName)
 				os.Exit(1)
 			}
-			fmt.Println(count(file, *lines, *isCountBytes))
+			fmt.Println(count(file, *lines, *isCountBytes, fName))
 			if err := file.Close(); err != nil {
 				fmt.Println("Error trying to close the file", file.Name())
 			}
@@ -42,7 +42,7 @@ func main() {
 			os.Exit(1)
 		}
 		if stdin.Size() > 0 {
-			fmt.Println(count(os.Stdin, *lines, *isCountBytes))
+			fmt.Println(count(os.Stdin, *lines, *isCountBytes, "stdin"))
 			os.Exit(1)
 		}
 	}
@@ -50,7 +50,7 @@ func main() {
 	flag.Usage()
 }
 
-func count(r io.Reader, countLines bool, countBytes bool) string {
+func count(r io.Reader, countLines bool, countBytes bool, fileName string) string {
 	// A scanner is used to read text from a Reader (such as files)
 	scanner := bufio.NewScanner(r)
 	// Define the scanner split type to words (default is split by lines)
@@ -82,5 +82,5 @@ func count(r io.Reader, countLines bool, countBytes bool) string {
 	}
 
 	// Return the total
-	return fmt.Sprintf("Counted this many %v : %d", format, wc)
+	return fmt.Sprintf("Counted for file %v this many %v : %d", fileName, format, wc)
 }
